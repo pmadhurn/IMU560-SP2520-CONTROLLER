@@ -1,2 +1,37 @@
 import sys
 sys.path.append('/home/pi/Desktop/master/imu560d')
+(venv) pi@raspberrypi:~/Desktop/master $ python north.py
+IMU560 North Finder Utility - Fixed Version
+==========================================
+WARNING:imu560:Config file config.json not found, using defaults
+INFO:imu560:IMU560 Controller initialized
+INFO:imu560:Connected to IMU560 on /dev/ttyUSB0 at 115200 baud
+✅ Connected to IMU560
+🔄 Setting up IMU for query mode...
+INFO:imu560:Continuous mode disabled, frequency: 100Hz
+INFO:imu560:Output mask set to 0x08000062
+✅ Output mask configured
+INFO:imu560:Current magnetic declination: 0.0°
+📍 Magnetic Declination: 0.00°
+
+============================================================
+🧭 IMU560 NORTH FINDER
+============================================================
+1. Single Reading
+2. Continuous Monitoring
+3. Detailed Analysis
+4. Raw Sensor Check
+5. Set Magnetic Declination
+6. Exit
+
+Select option (1-6): 1
+INFO:imu560:Current output mask: 0x08000062
+
+🧭 CURRENT HEADING:
+Magnetic Heading: -46.4°
+True Heading: 313.6° (NW)
+Deviation from North: 46.4° West
+Magnetic Field Strength: 57.7µT
+🔄 Rotate 46.4° clockwise (right) to point North
+
+Press Enter to continue...
