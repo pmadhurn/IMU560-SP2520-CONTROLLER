@@ -1,0 +1,7 @@
+2025-09-17 16:52:06,373 - imu560 - INFO - IMU560 Controller initialized
+2025-09-17 17:20:58,507 - imu560 - INFO - IMU560 Controller initialized
+2025-09-17 17:21:04,647 - imu560 - INFO - Connected to IMU560 on /dev/ttyUSB0 at 115200 baud
+2025-09-17 17:21:10,084 - imu560 - ERROR - Invalid response to start calibration command
+2025-09-17 17:21:10,087 - imu560 - ERROR - Invalid response to set continuous mode command
+2025-09-17 17:21:10,088 - imu560 - INFO - Continuous mode stopped
+2025-09-17 17:21:10,094 - imu560 - INFO - Disconnected from IMU560

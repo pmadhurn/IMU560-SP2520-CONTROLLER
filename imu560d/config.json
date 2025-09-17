@@ -1,0 +1,18 @@
+{
+    "serial": {
+        "port": "/dev/ttyUSB0",
+        "baudrate": 115200,
+        "timeout": 1.0,
+        "write_timeout": 1.0
+    },
+    "logging": {
+        "level": "INFO",
+        "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        "file": "imu560.log"
+    },
+    "default_settings": {
+        "continuous_mode": true,
+        "output_frequency": 100,
+        "output_mask": "0x0019085A"
+    }
+}
