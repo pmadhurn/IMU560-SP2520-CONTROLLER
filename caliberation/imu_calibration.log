@@ -1,0 +1,23 @@
+2025-09-18 13:39:31,532 - INFO - IMU connected on /dev/ttyUSB0 at 115200 baud
+2025-09-18 13:39:31,546 - INFO - All devices initialized successfully
+2025-09-18 13:39:31,626 - WARNING - CRC mismatch in response
+2025-09-18 13:39:31,628 - ERROR - Failed to get sensor data
+2025-09-18 13:39:31,668 - INFO - Cleanup completed
+2025-09-18 13:39:55,003 - INFO - IMU connected on /dev/ttyUSB0 at 115200 baud
+2025-09-18 13:39:55,018 - INFO - All devices initialized successfully
+2025-09-18 13:39:55,018 - INFO - Testing pan-tilt movements...
+2025-09-18 13:39:55,019 - INFO - Testing left movement
+2025-09-18 13:39:57,020 - INFO - Testing right movement
+2025-09-18 13:39:59,021 - INFO - Testing up movement
+2025-09-18 13:40:01,022 - INFO - Testing down movement
+2025-09-18 13:40:03,023 - INFO - Pan-tilt test completed successfully
+2025-09-18 13:40:03,048 - INFO - Cleanup completed
+2025-09-18 13:40:53,416 - INFO - IMU connected on /dev/ttyUSB0 at 115200 baud
+2025-09-18 13:40:53,427 - INFO - All devices initialized successfully
+2025-09-18 13:40:53,427 - INFO - Testing pan-tilt movements...
+2025-09-18 13:40:53,428 - INFO - Testing left movement
+2025-09-18 13:40:55,429 - INFO - Testing right movement
+2025-09-18 13:40:57,430 - INFO - Testing up movement
+2025-09-18 13:40:59,431 - INFO - Testing down movement
+2025-09-18 13:41:01,432 - INFO - Pan-tilt test completed successfully
+2025-09-18 13:41:01,467 - INFO - Cleanup completed

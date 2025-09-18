@@ -5,7 +5,10 @@ Provides accurate GPS coordinates and magnetometer readings
 """
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), 'imu560d'))
+
+
+sys.path.append('/home/pi/Desktop/master/imu560d')
+sys.path.append('/home/pi/Desktop/master/sp250')
 
 import time
 import math
