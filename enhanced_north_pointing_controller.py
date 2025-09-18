@@ -5,8 +5,13 @@ Advanced PTZ control with improved timing and bidirectional movement for accurat
 """
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), 'sp250'))
-sys.path.append(os.path.join(os.path.dirname(__file__), 'imu560d'))
+
+
+
+sys.path.append('/home/pi/Desktop/master/imu560d')
+sys.path.append('/home/pi/Desktop/master/sp250')
+
+
 
 import time
 import math
@@ -27,18 +32,18 @@ class EnhancedNorthPointingController:
         # Enhanced control parameters
         self.target_heading = 0.0  # North
         self.heading_tolerance = 2.0  # degrees (±2°)
-        self.fine_tolerance = 0.5  # degrees for fine adjustment
+        self.fine_tolerance = 2.0 # degrees for fine adjustment
         self.max_correction_angle = 10.0  # Maximum correction per step
         self.update_interval = 0.5  # seconds between corrections (faster)
         
         # Movement timing parameters (calibrated for better accuracy)
-        self.degrees_per_second = 8.0  # Estimated degrees per second at default speed
+        self.degrees_per_second = 2.0  # Estimated degrees per second at default speed
         self.min_movement_time = 0.05  # Minimum movement time
         self.max_movement_time = 3.0   # Maximum movement time
-        self.stabilization_time = 0.3  # Time to wait after movement
+        self.stabilization_time = 0.03  # Time to wait after movement
         
         # Bidirectional movement parameters
-        self.use_bidirectional = True  # Use both directions for better timing
+        self.use_bidirectional = False  # Use both directions for better timing
         self.overshoot_compensation = 0.5  # degrees to compensate for overshoot
         
         # State variables
