@@ -1,0 +1,59 @@
+import serial
+
+def calc_crc(data):
+    """Calculate 16-bit CRC (sum) for IMU560 frame."""
+    crc = 0
+    for b in data:
+        crc = (crc + b) & 0xFFFF
+    return crc
+
+def build_frame(cmd, data_byte):
+    """Build a full IMU560 frame with CRC and ending byte."""
+    frame = bytearray([0xFF, 0x02, 0x70, 0x00, 0x01, data_byte])
+    crc = calc_crc(frame[2:])  # calculate CRC from CMD to last data byte
+    frame += bytearray([crc & 0xFF, (crc >> 8) & 0xFF, 0x03])
+    return frame
+
+def send_command(ser, mode):
+    """Send calibration command and print status message."""
+    if mode == "start":
+        frame = build_frame(0x70, 0x08)
+        print("➡️ Sending START calibration command...")
+    elif mode == "stop":
+        frame = build_frame(0x70, 0x0A)
+        print("➡️ Sending STOP calibration command...")
+    elif mode == "abandon":
+        frame = build_frame(0x70, 0x09)
+        print("➡️ Sending ABANDON calibration command...")
+    else:
+        print("❌ Unknown mode")
+        return
+
+    ser.write(frame)
+    resp = ser.read(20)  # read IMU response
+    print("📡 Response:", resp.hex(" "))
+
+    if resp:
+        if resp[2] == 0x01 and resp[5] == 0x00:  # IMU_ACK success
+            if mode == "start":
+                print("✅ Entered calibration mode. Rotate IMU slowly (one revolution, ~30s).")
+            elif mode == "stop":
+                print("✅ Calibration stopped and saved.")
+            elif mode == "abandon":
+                print("⚠️ Calibration abandoned, nothing saved.")
+        else:
+            print("⚠️ Error response from IMU.")
+    else:
+        print("⚠️ No response from IMU.")
+
+if __name__ == "__main__":
+    # Open serial port on Raspberry Pi (adjust if needed)
+    ser = serial.Serial("/dev/ttyUSB1", 115200, timeout=1)
+
+    # Example usage
+    send_command(ser, "start")    # enter calibration mode
+    # Rotate the IMU before running stop
+    # send_command(ser, "stop")   # stop calibration
+    # send_command(ser, "abandon")# abandon calibration
+
+    ser.close()
