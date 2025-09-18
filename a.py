@@ -6,7 +6,7 @@ import struct
 import sys
 
 class FinalHeadingMonitor:
-    def __init__(self, port='COM9', baudrate=115200):
+    def __init__(self, port='/dev/ttyUSB1', baudrate=115200):
         self.port = port
         self.baudrate = baudrate
         self.ser = None
@@ -153,7 +153,7 @@ def main():
     import argparse
     
     parser = argparse.ArgumentParser(description='Final Magnetic Heading Monitor')
-    parser.add_argument('--port', default='COM9', help='Serial port')
+    parser.add_argument('--port', default='/dev/ttyUSB1', help='Serial port')
     parser.add_argument('--test', action='store_true', help='Quick test mode')
     
     args = parser.parse_args()

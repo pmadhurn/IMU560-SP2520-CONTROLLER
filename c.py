@@ -8,7 +8,7 @@ import threading
 from math import fabs
 
 class NorthPointingSystem:
-    def __init__(self, heading_port='COM9', controller_port='/dev/ttyUSB1', 
+    def __init__(self, heading_port='/dev/ttyUSB1', controller_port='/dev/ttyUSB0', 
                  heading_baudrate=115200, controller_baudrate=2400, controller_address=1):
         
         # Heading Monitor Setup
@@ -300,8 +300,8 @@ def main():
     import argparse
     
     parser = argparse.ArgumentParser(description='North Pointing System')
-    parser.add_argument('--heading-port', default='COM9', help='Heading monitor serial port')
-    parser.add_argument('--controller-port', default='/dev/ttyUSB1', help='Controller serial port')
+    parser.add_argument('--heading-port', default='/dev/ttyUSB1', help='Heading monitor serial port')
+    parser.add_argument('--controller-port', default='/dev/ttyUSB0', help='Controller serial port')
     parser.add_argument('--tolerance', type=float, default=2.0, help='Pointing tolerance in degrees')
     parser.add_argument('--speed', type=int, default=0x15, help='Movement speed (hex value)')
     parser.add_argument('--calibrate', action='store_true', help='Perform 360° calibration first')
@@ -323,4 +323,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
