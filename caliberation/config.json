@@ -1,0 +1,26 @@
+{
+  "imu": {
+    "port": "/dev/ttyUSB0",
+    "baudrate": 115200,
+    "timeout": 2.0
+  },
+  "pantilt": {
+    "port": "/dev/ttyUSB1",
+    "baudrate": 2400,
+    "address": 1,
+    "pan_speed": 32,
+    "tilt_speed": 32
+  },
+  "calibration": {
+    "rotation_time": 35.0,
+    "rotation_steps": 36,
+    "step_delay": 1.0,
+    "tilt_positions": [-20, 0, 20],
+    "continuous_mode_frequency": 10,
+    "calibration_timeout": 120.0
+  },
+  "logging": {
+    "level": "INFO",
+    "file": "imu_calibration.log"
+  }
+}
