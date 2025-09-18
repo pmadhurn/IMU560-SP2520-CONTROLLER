@@ -121,11 +121,20 @@ class OutputMask(IntEnum):
 
 @dataclass
 class SensorData:
-    """Data structure for sensor readings"""
+    """Data structure for sensor readings - Enhanced with missing fields"""
+    # Quaternion (w, x, y, z)
+    quat_w: float = 1.0
+    quat_x: float = 0.0
+    quat_y: float = 0.0
+    quat_z: float = 0.0
+    
     # Attitude (Euler angles in radians)
     roll: float = 0.0
     pitch: float = 0.0
     yaw: float = 0.0
+    
+    # Rotation matrix (3x3)
+    matrix: List[float] = None
     
     # Gyroscope (rad/s)
     gyro_x: float = 0.0
@@ -146,8 +155,39 @@ class SensorData:
     temp_0: float = 0.0
     temp_1: float = 0.0
     
+    # Raw sensor data
+    gyro_raw_x: int = 0
+    gyro_raw_y: int = 0
+    gyro_raw_z: int = 0
+    accel_raw_x: int = 0
+    accel_raw_y: int = 0
+    accel_raw_z: int = 0
+    mag_raw_x: int = 0
+    mag_raw_y: int = 0
+    mag_raw_z: int = 0
+    temp_raw_0: int = 0
+    temp_raw_1: int = 0
+    
     # Time since reset (ms)
     time_since_reset: int = 0
+    
+    # Device status
+    device_status: int = 0
+    
+    # GPS position (WGS84) - CORRECTED
+    gps_latitude: float = 0.0   # degrees
+    gps_longitude: float = 0.0  # degrees
+    gps_altitude: float = 0.0   # meters
+    
+    # GPS navigation data - ADDED
+    gps_speed: float = 0.0      # m/s
+    gps_course: float = 0.0     # degrees
+    gps_climb: float = 0.0      # m/s
+    
+    # GPS accuracy data - ADDED
+    gps_h_accuracy: float = 0.0  # horizontal accuracy (m)
+    gps_v_accuracy: float = 0.0  # vertical accuracy (m)
+    gps_s_accuracy: float = 0.0  # speed accuracy (m/s)
     
     # GPS info
     gps_itow: int = 0
@@ -158,7 +198,7 @@ class SensorData:
     baro_altitude: int = 0  # cm
     baro_pressure: int = 0  # Pascal
     
-    # Position (WGS84)
+    # Position (WGS84) - Navigation solution
     latitude: float = 0.0   # degrees
     longitude: float = 0.0  # degrees
     altitude: float = 0.0   # meters
@@ -168,6 +208,15 @@ class SensorData:
     vel_east: float = 0.0
     vel_down: float = 0.0
     
+    # Accuracy estimates
+    attitude_accuracy: float = 0.0  # degrees
+    nav_accuracy: float = 0.0       # meters
+    
+    # Gyro temperatures
+    gyro_temp_x: float = 0.0
+    gyro_temp_y: float = 0.0
+    gyro_temp_z: float = 0.0
+    
     # UTC Time
     utc_year: int = 0
     utc_month: int = 0
@@ -175,9 +224,28 @@ class SensorData:
     utc_hour: int = 0
     utc_minute: int = 0
     utc_second: int = 0
+    utc_nanosecond: int = 0
+    
+    # Magnetic calibration data
+    mag_calib_status: int = 0
     
     # Magnetic heading (degrees)
     mag_heading: float = 0.0
+    
+    # Odometer velocity
+    odo_velocity: float = 0.0
+    
+    # Delta angles
+    delta_angle_x: float = 0.0
+    delta_angle_y: float = 0.0
+    delta_angle_z: float = 0.0
+    
+    # Heave
+    heave: float = 0.0
+    
+    def __post_init__(self):
+        if self.matrix is None:
+            self.matrix = [0.0] * 9
 
 class IMU560:
     """IMU560 Combined Inertial Navigation System Controller"""
@@ -195,7 +263,7 @@ class IMU560:
         self.load_config(config_file)
         self.setup_logging()
         
-        logger.info("IMU560 Controller initialized")
+        logger.info("IMU560 Controller initialized (CORRECTED VERSION)")
     
     def load_config(self, config_file: str):
         """Load configuration from JSON file"""
@@ -671,16 +739,26 @@ class IMU560:
             return False
     
     def parse_sensor_data(self, data: bytes, mask: int) -> SensorData:
-        """Parse sensor data based on output mask"""
+        """Parse sensor data based on output mask - CORRECTED VERSION"""
         sensor_data = SensorData()
         offset = 0
         
         try:
-            # Parse data according to mask bits
+            # Parse data according to mask bits in correct order
+            if mask & OutputMask.QUATERNION:
+                if len(data) >= offset + 16:
+                    sensor_data.quat_w, sensor_data.quat_x, sensor_data.quat_y, sensor_data.quat_z = struct.unpack('<ffff', data[offset:offset+16])
+                    offset += 16
+            
             if mask & OutputMask.EULER:
                 if len(data) >= offset + 12:
                     sensor_data.roll, sensor_data.pitch, sensor_data.yaw = struct.unpack('<fff', data[offset:offset+12])
                     offset += 12
+            
+            if mask & OutputMask.MATRIX:
+                if len(data) >= offset + 36:
+                    sensor_data.matrix = list(struct.unpack('<fffffffff', data[offset:offset+36]))
+                    offset += 36
             
             if mask & OutputMask.GYROSCOPES:
                 if len(data) >= offset + 12:
@@ -702,10 +780,50 @@ class IMU560:
                     sensor_data.temp_0, sensor_data.temp_1 = struct.unpack('<ff', data[offset:offset+8])
                     offset += 8
             
+            if mask & OutputMask.GYROSCOPES_RAW:
+                if len(data) >= offset + 6:
+                    sensor_data.gyro_raw_x, sensor_data.gyro_raw_y, sensor_data.gyro_raw_z = struct.unpack('<hhh', data[offset:offset+6])
+                    offset += 6
+            
+            if mask & OutputMask.ACCELEROMETERS_RAW:
+                if len(data) >= offset + 6:
+                    sensor_data.accel_raw_x, sensor_data.accel_raw_y, sensor_data.accel_raw_z = struct.unpack('<hhh', data[offset:offset+6])
+                    offset += 6
+            
+            if mask & OutputMask.MAGNETOMETERS_RAW:
+                if len(data) >= offset + 6:
+                    sensor_data.mag_raw_x, sensor_data.mag_raw_y, sensor_data.mag_raw_z = struct.unpack('<hhh', data[offset:offset+6])
+                    offset += 6
+            
+            if mask & OutputMask.TEMPERATURES_RAW:
+                if len(data) >= offset + 4:
+                    sensor_data.temp_raw_0, sensor_data.temp_raw_1 = struct.unpack('<hh', data[offset:offset+4])
+                    offset += 4
+            
             if mask & OutputMask.TIME_SINCE_RESET:
                 if len(data) >= offset + 4:
                     sensor_data.time_since_reset = struct.unpack('<I', data[offset:offset+4])[0]
                     offset += 4
+            
+            if mask & OutputMask.DEVICE_STATUS:
+                if len(data) >= offset + 4:
+                    sensor_data.device_status = struct.unpack('<I', data[offset:offset+4])[0]
+                    offset += 4
+            
+            if mask & OutputMask.GPS_POSITION:
+                if len(data) >= offset + 24:
+                    sensor_data.gps_latitude, sensor_data.gps_longitude, sensor_data.gps_altitude = struct.unpack('<ddd', data[offset:offset+24])
+                    offset += 24
+            
+            if mask & OutputMask.GPS_NAVIGATION:
+                if len(data) >= offset + 12:
+                    sensor_data.gps_speed, sensor_data.gps_course, sensor_data.gps_climb = struct.unpack('<fff', data[offset:offset+12])
+                    offset += 12
+            
+            if mask & OutputMask.GPS_ACCURACY:
+                if len(data) >= offset + 12:
+                    sensor_data.gps_h_accuracy, sensor_data.gps_v_accuracy, sensor_data.gps_s_accuracy = struct.unpack('<fff', data[offset:offset+12])
+                    offset += 12
             
             if mask & OutputMask.GPS_INFO:
                 if len(data) >= offset + 6:
@@ -734,23 +852,66 @@ class IMU560:
                     sensor_data.vel_north, sensor_data.vel_east, sensor_data.vel_down = struct.unpack('<fff', data[offset:offset+12])
                     offset += 12
             
+            if mask & OutputMask.ATTITUDE_ACCURACY:
+                if len(data) >= offset + 4:
+                    sensor_data.attitude_accuracy = struct.unpack('<f', data[offset:offset+4])[0]
+                    offset += 4
+            
+            if mask & OutputMask.NAV_ACCURACY:
+                if len(data) >= offset + 4:
+                    sensor_data.nav_accuracy = struct.unpack('<f', data[offset:offset+4])[0]
+                    offset += 4
+            
+            if mask & OutputMask.GYRO_TEMPERATURES:
+                if len(data) >= offset + 12:
+                    sensor_data.gyro_temp_x, sensor_data.gyro_temp_y, sensor_data.gyro_temp_z = struct.unpack('<fff', data[offset:offset+12])
+                    offset += 12
+            
+            if mask & OutputMask.GYRO_TEMPERATURES_RAW:
+                if len(data) >= offset + 6:
+                    # Skip raw gyro temperatures for now
+                    offset += 6
+            
             if mask & OutputMask.UTC_TIME_REFERENCE:
-                if len(data) >= offset + 7:
+                if len(data) >= offset + 11:
                     sensor_data.utc_year = struct.unpack('<H', data[offset:offset+2])[0]
                     sensor_data.utc_month = data[offset+2]
                     sensor_data.utc_day = data[offset+3]
                     sensor_data.utc_hour = data[offset+4]
                     sensor_data.utc_minute = data[offset+5]
                     sensor_data.utc_second = data[offset+6]
-                    offset += 7
+                    sensor_data.utc_nanosecond = struct.unpack('<I', data[offset+7:offset+11])[0]
+                    offset += 11
+            
+            if mask & OutputMask.MAG_CALIB_DATA:
+                if len(data) >= offset + 4:
+                    sensor_data.mag_calib_status = struct.unpack('<I', data[offset:offset+4])[0]
+                    offset += 4
             
             if mask & OutputMask.MAG_HEADING:
                 if len(data) >= offset + 4:
                     sensor_data.mag_heading = struct.unpack('<f', data[offset:offset+4])[0]
                     offset += 4
             
+            if mask & OutputMask.ODO_VELOCITY:
+                if len(data) >= offset + 4:
+                    sensor_data.odo_velocity = struct.unpack('<f', data[offset:offset+4])[0]
+                    offset += 4
+            
+            if mask & OutputMask.DELTA_ANGLES:
+                if len(data) >= offset + 12:
+                    sensor_data.delta_angle_x, sensor_data.delta_angle_y, sensor_data.delta_angle_z = struct.unpack('<fff', data[offset:offset+12])
+                    offset += 12
+            
+            if mask & OutputMask.HEAVE:
+                if len(data) >= offset + 4:
+                    sensor_data.heave = struct.unpack('<f', data[offset:offset+4])[0]
+                    offset += 4
+            
         except struct.error as e:
             logger.error(f"Error parsing sensor data: {e}")
+        except Exception as e:
+            logger.error(f"Unexpected error parsing sensor data: {e}")
         
         return sensor_data
     
@@ -758,6 +919,118 @@ class IMU560:
         """Get sensor data with specified mask or default"""
         try:
             if mask is None:
+                cmd, data = self.send_command(Commands.IMU_GET_DEFAULT_OUTPUT)
+                expected_cmd = Commands.IMU_RET_DEFAULT_OUTPUT
+                current_mask = self.get_output_mask()
+                if current_mask is None:
+                    logger.error("Failed to get current output mask")
+                    return None
+            else:
+                mask_data = struct.pack('<I', mask)
+                cmd, data = self.send_command(Commands.IMU_GET_SPECIFIC_OUTPUT, mask_data)
+                expected_cmd = Commands.IMU_RET_SPECIFIC_OUTPUT
+                current_mask = mask
+            
+            if cmd == expected_cmd:
+                return self.parse_sensor_data(data, current_mask)
+            else:
+                logger.error(f"Unexpected response command: 0x{cmd:02X}")
+                return None
+                
+        except Exception as e:
+            logger.error(f"Error getting sensor data: {e}")
+            return None
+    
+    def start_continuous_mode(self, callback=None, frequency_divider: int = 1):
+        """Start continuous data output mode"""
+        if not self.set_continuous_mode(True, frequency_divider):
+            logger.error("Failed to enable continuous mode")
+            return False
+        
+        self.continuous_callback = callback
+        self.stop_continuous = False
+        self.continuous_thread = threading.Thread(target=self._continuous_reader)
+        self.continuous_thread.daemon = True
+        self.continuous_thread.start()
+        logger.info("Continuous mode started")
+        return True
+    
+    def stop_continuous_mode(self):
+        """Stop continuous data output mode"""
+        self.stop_continuous = True
+        if self.continuous_thread and self.continuous_thread.is_alive():
+            self.continuous_thread.join(timeout=2)
+        
+        if self.is_connected:
+            self.set_continuous_mode(False)
+        
+        logger.info("Continuous mode stopped")
+    
+    def _continuous_reader(self):
+        """Internal thread function for continuous data reading"""
+        current_mask = self.get_output_mask()
+        if current_mask is None:
+            logger.error("Cannot get output mask for continuous mode")
+            return
+        
+        while not self.stop_continuous and self.is_connected:
+            try:
+                frame = self.read_frame()
+                cmd, data = self.parse_frame(frame)
+                
+                if cmd == Commands.IMU_CONTINUOUS_DEFAULT_OUTPUT:
+                    sensor_data = self.parse_sensor_data(data, current_mask)
+                    if self.continuous_callback:
+                        self.continuous_callback(sensor_data)
+                
+            except Exception as e:
+                if not self.stop_continuous:
+                    logger.error(f"Error in continuous reader: {e}")
+                    time.sleep(0.1)  # Brief pause before retry
+    
+    def __enter__(self):
+        """Context manager entry"""
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Context manager exit"""
+        self.disconnect()
+
+# Default output mask with commonly used sensors
+DEFAULT_OUTPUT_MASK = (
+    OutputMask.EULER |
+    OutputMask.GYROSCOPES |
+    OutputMask.ACCELEROMETERS |
+    OutputMask.MAGNETOMETERS |
+    OutputMask.TEMPERATURES |
+    OutputMask.TIME_SINCE_RESET |
+    OutputMask.GPS_INFO |
+    OutputMask.BARO_ALTITUDE |
+    OutputMask.BARO_PRESSURE |
+    OutputMask.POSITION |
+    OutputMask.VELOCITY |
+    OutputMask.UTC_TIME_REFERENCE |
+    OutputMask.MAG_HEADING
+)
+
+if __name__ == "__main__":
+    # Simple test
+    with IMU560() as imu:
+        if imu.connect():
+            print("Connected to IMU560")
+            
+            # Get current settings
+            mask = imu.get_output_mask()
+            print(f"Current output mask: 0x{mask:08X}")
+            
+            # Get sensor data
+            data = imu.get_sensor_data()
+            if data:
+                print(f"Roll: {data.roll:.3f}, Pitch: {data.pitch:.3f}, Yaw: {data.yaw:.3f}")
+                print(f"Accel: ({data.accel_x:.3f}, {data.accel_y:.3f}, {data.accel_z:.3f}) m/s²")
+                print(f"Gyro: ({data.gyro_x:.3f}, {data.gyro_y:.3f}, {data.gyro_z:.3f}) rad/s")
+        else:
+            print("Failed to connect to IMU560")
                 cmd, data = self.send_command(Commands.IMU_GET_DEFAULT_OUTPUT)
                 expected_cmd = Commands.IMU_RET_DEFAULT_OUTPUT
                 current_mask = self.get_output_mask()
