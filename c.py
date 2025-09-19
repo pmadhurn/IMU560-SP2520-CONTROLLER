@@ -33,10 +33,10 @@ class NorthPointingSystem:
         
         # Control parameters
         self.target_heading = 0.0  # North
-        self.tolerance = 2.0       # Degrees tolerance
+        self.tolerance = 0.50       # Degrees tolerance
         self.current_heading = None
         self.last_adjustment_time = 0
-        self.adjustment_cooldown = 0.5  # Seconds between adjustments
+        self.adjustment_cooldown = 0.25  # Seconds between adjustments
         self.running = False
         
     def connect_heading_monitor(self):
@@ -302,7 +302,7 @@ def main():
     parser = argparse.ArgumentParser(description='North Pointing System')
     parser.add_argument('--heading-port', default='/dev/ttyUSB1', help='Heading monitor serial port')
     parser.add_argument('--controller-port', default='/dev/ttyUSB0', help='Controller serial port')
-    parser.add_argument('--tolerance', type=float, default=2.0, help='Pointing tolerance in degrees')
+    parser.add_argument('--tolerance', type=float, default=0.50, help='Pointing tolerance in degrees')
     parser.add_argument('--speed', type=int, default=0x15, help='Movement speed (hex value)')
     parser.add_argument('--calibrate', action='store_true', help='Perform 360° calibration first')
     
