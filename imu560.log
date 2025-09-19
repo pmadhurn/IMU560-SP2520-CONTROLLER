@@ -158,7 +158,8 @@
 2025-09-18 14:39:11,247 - imu560 - INFO - Current output mask: 0x0A130022
 2025-09-18 14:39:12,844 - imu560 - INFO - Current output mask: 0x0A130022
 2025-09-18 14:39:14,610 - imu560 - INFO - Current output mask: 0x0A130022
-2025-09-18 14:39:14,655 - imu560 - INFO - Current output mask: 0x0A130022
+2025-09-18 14:39:14,655 - imu560 - INFO - Current output mask: 0x0A130022-
+
 2025-09-18 14:39:16,250 - imu560 - INFO - Current output mask: 0x0A130022
 2025-09-18 14:39:17,891 - imu560 - INFO - Current output mask: 0x0A130022
 2025-09-18 14:39:17,935 - imu560 - INFO - Current output mask: 0x0A130022
